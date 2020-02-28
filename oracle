@@ -1,1 +1,0 @@
-settings = dict(provider='oracle', user='C##PONY', password='pony', dsn='oracle')

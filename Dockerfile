@@ -1,29 +1,24 @@
 FROM jetbrains/teamcity-agent:latest
+RUN apt-get update && apt-get upgrade -y 
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y make build-essential libssl1.0-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl git libaio1 gcc libpq-dev python-dev
 
-#install python3
-RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y python3
-ENV PYTHON3 /usr/bin/python3
+RUN git clone git://github.com/pyenv/pyenv.git .pyenv
 
-#install python3-pip
-RUN apt-get install -y python3-pip
-ENV PIP3 /usr/lib/python3/dist-packages/pip
+ENV HOME  /
+ENV PYENV_ROOT $HOME/.pyenv
+ENV PATH $PYENV_ROOT/shims:$PYENV_ROOT/bin:$PATH
 
-#install teamcity-messages and psycopg2
-RUN pip3 install teamcity-messages psycopg2-binary
+RUN pyenv install 2.7.11 && pyenv local 2.7.11 && pip install --upgrade pip && pip install pymysql psycopg2-binary cx_Oracle teamcity-messages twine && pip install --upgrade keyrings.alt
+RUN pyenv install 3.6.10 && pyenv local 3.6.10 && pip install --upgrade pip && pip install pymysql psycopg2-binary cx_Oracle teamcity-messages twine && pip install --upgrade keyrings.alt
+RUN pyenv install 3.7.6 && pyenv local 3.7.6 && pip install --upgrade pip && pip install pymysql psycopg2-binary cx_Oracle teamcity-messages twine && pip install --upgrade keyrings.alt
+RUN pyenv install 3.8.1 && pyenv local 3.8.1 && pip install --upgrade pip && pip install pymysql psycopg2-binary cx_Oracle teamcity-messages twine && pip install --upgrade keyrings.alt
+RUN pyenv install pypy2.7-7.3.0 && pyenv local pypy2.7-7.3.0 && pip install --upgrade pip && pip install pymysql psycopg2cffi cx_Oracle teamcity-messages twine && pip install --upgrade keyrings.alt
+RUN pyenv install pypy3.6-7.3.0 && pyenv local pypy3.6-7.3.0 && python -m pip install --upgrade pip && python -m pip install pymysql psycopg2cffi cx_Oracle teamcity-messages twine && python -m pip install --upgrade keyrings.alt
 
-#Install python2-pip
-RUN apt-get install -y python-pip
-ENV PIP /usr/lib/python2.7/dist-packages/pip
+RUN mkdir /db_providers && mkdir /oracle_stuff
+COPY settings /db_providers/
+RUN cd /db_providers && tar -xvf settings
 
-#install teamcity-messages, psycopg2-bunary
-RUN pip install teamcity-messages psycopg2-binary
-
-#move database settings
-RUN mkdir /db_providers
-COPY sqlite /db_providers/
-COPY postgres /db_providers/
-COPY mysql /db_providers/
-COPY oracle /db_providers/
-COPY cockroach /db_providers/
+COPY install_client.sh /oracle_stuff/
+RUN /bin/bash -c 'chmod +x /oracle_stuff/install_client.sh && ./oracle_stuff/install_client.sh'
 
