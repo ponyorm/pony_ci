@@ -16,8 +16,11 @@ RUN pyenv install pypy2.7-7.3.0 && pyenv local pypy2.7-7.3.0 && pip install --up
 RUN pyenv install pypy3.6-7.3.0 && pyenv local pypy3.6-7.3.0 && python -m pip install --upgrade pip && python -m pip install pymysql psycopg2cffi cx_Oracle teamcity-messages twine && python -m pip install --upgrade keyrings.alt
 
 RUN mkdir /db_providers && mkdir /oracle_stuff
-COPY settings /db_providers/
-RUN cd /db_providers && tar -xvf settings
+COPY sqlite /db_providers/
+COPY postgres /db_providers/
+COPY mysql /db_providers/
+COPY oracle /db_providers/
+COPY cockroach /db_providers/
 
 COPY install_client.sh /oracle_stuff/
 RUN /bin/bash -c 'chmod +x /oracle_stuff/install_client.sh && ./oracle_stuff/install_client.sh'
